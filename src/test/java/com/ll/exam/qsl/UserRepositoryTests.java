@@ -32,19 +32,19 @@ class UserRepositoryTests {
     @Test
     @DisplayName("회원 생성")
     void t1() {
-        SiteUser u3 = SiteUser.builder()
-                .username("user3")
+        SiteUser u9 = SiteUser.builder()
+                .username("user9")
                 .password("{noop}1234")
-                .email("user3@test.com")
+                .email("user9@test.com")
                 .build();
 
-        SiteUser u4 = SiteUser.builder()
-                .username("user4")
+        SiteUser u10 = SiteUser.builder()
+                .username("user10")
                 .password("{noop}1234")
-                .email("user4@test.com")
+                .email("user10@test.com")
                 .build();
 
-        userRepository.saveAll(Arrays.asList(u3, u4));
+        userRepository.saveAll(Arrays.asList(u9, u10));
     }
 
     @Test
@@ -206,11 +206,12 @@ class UserRepositoryTests {
         List<SiteUser> users = usersPage.get().toList();
 
         assertThat(users.size()).isEqualTo(pageSize);
+
         SiteUser u = users.get(0);
 
-        assertThat(u.getId()).isEqualTo(1L);
-        assertThat(u.getUsername()).isEqualTo("user1");
-        assertThat(u.getEmail()).isEqualTo("user1@test.com");
+        assertThat(u.getId()).isEqualTo(7L);
+        assertThat(u.getUsername()).isEqualTo("user7");
+        assertThat(u.getEmail()).isEqualTo("user7@test.com");
         assertThat(u.getPassword()).isEqualTo("{noop}1234");
     }
 
@@ -266,8 +267,34 @@ class UserRepositoryTests {
         SiteUser u1 = userRepository.getQslUser(1L);
         SiteUser u2 = userRepository.getQslUser(2L);
 
-        u2.addFollower(u1);
+        u1.follow(u2);
 
         userRepository.save(u2);
+    }
+
+    @Test
+    @DisplayName("본인이 본인을 follow 할 수 없다.")
+    @Rollback(false)
+    void t14() {
+        SiteUser u1 = userRepository.getQslUser(1L);
+
+        u1.follow(u1);
+
+        assertThat(u1.getFollowers().size()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("특정회원의 follower들과 following들을 모두 알 수 있어야 한다.")
+    @Rollback(false)
+    void t15() {
+        SiteUser u1 = userRepository.getQslUser(1L);
+        SiteUser u2 = userRepository.getQslUser(2L);
+
+        u1.follow(u2);
+
+        assertThat(u1.getFollowers().size()).isEqualTo(0);
+        assertThat(u2.getFollowers().size()).isEqualTo(1);
+        assertThat(u1.getFollowings().size()).isEqualTo(1);
+        assertThat(u2.getFollowings().size()).isEqualTo(0);
     }
 }

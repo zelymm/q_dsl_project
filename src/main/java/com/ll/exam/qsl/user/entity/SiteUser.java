@@ -27,18 +27,28 @@ public class SiteUser {
     private String email;
 
     @Builder.Default
-    @ManyToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private Set<InterestKeyword> interestKeywords = new HashSet<>();
 
-
-    public void addInterestKeywordContent(String keywordContent) {
-        interestKeywords.add(new InterestKeyword(keywordContent));
-    }
     @Builder.Default
     @ManyToMany(cascade = CascadeType.ALL)
     private Set<SiteUser> followers = new HashSet<>();
 
-    public void addFollower(SiteUser follower) {
-        followers.add(follower);
+    @Builder.Default
+    @ManyToMany(cascade = CascadeType.ALL)
+    private Set<SiteUser> followings = new HashSet<>();
+
+    public void addInterestKeywordContent(String keywordContent) {
+        interestKeywords.add(new InterestKeyword(this, keywordContent));
+    }
+
+    public void follow(SiteUser following) {
+        if (this == following) return;
+        if (following == null) return;
+        if (this.getId() == following.getId()) return;
+
+        following.getFollowers().add(this);
+
+        getFollowings().add(following);
     }
 }
